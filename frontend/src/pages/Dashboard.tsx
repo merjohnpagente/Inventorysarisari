@@ -34,11 +34,11 @@ export default function Dashboard() {
       <div className="card p-5">
         <h2 className="mb-4 font-semibold">Stock Overview</h2>
         {d.stock_overview?.length ? (
-          <div className="h-64">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={d.stock_overview}>
+              <BarChart data={d.stock_overview} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748B' }} interval={0} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} interval={0} angle={-40} textAnchor="end" height={64} tickMargin={6} tickFormatter={(v: string) => (v.length > 12 ? `${v.slice(0, 11)}…` : v)} />
                 <YAxis tick={{ fontSize: 12, fill: '#64748B' }} allowDecimals={false} />
                 <Tooltip cursor={{ fill: '#F1F5F9' }} />
                 <Bar dataKey="quantity" name="Quantity" fill="#22C55E" radius={[6, 6, 0, 0]} animationDuration={900} />
