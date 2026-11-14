@@ -1,7 +1,10 @@
 import axios from 'axios';
+import mockAdapter from './mock';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const api = axios.create({ baseURL, headers: { Accept: 'application/json' } });
+
+if (import.meta.env.VITE_MOCK) api.defaults.adapter = mockAdapter;
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token'); // auth token only; all data lives in MySQL

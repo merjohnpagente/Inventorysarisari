@@ -20,3 +20,7 @@ npm run dev
 - PUT /profile `{ name, email }`, PUT /password `{ current_password, password, password_confirmation }`
   (these three extras and /register are not in your route list; add them in the backend step)
 - Product images are served from `{API origin}/storage/{product_image}` (run `php artisan storage:link`)
+
+## Preview mode (no backend)
+`npm run dev:preview` runs the UI with an in-memory mock API and sample data (any email + 8+ char password logs in).
+`npm run build:preview` builds a single-file `dist-preview/index.html`.

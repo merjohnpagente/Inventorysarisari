@@ -41,6 +41,7 @@ export default function Login() {
           <h1 className="text-xl font-semibold text-primary">SariStore</h1>
           <p className="text-sm text-muted">{isRegister ? 'Create the administrator account' : 'Sign in to manage your inventory'}</p>
         </div>
+        {import.meta.env.VITE_MOCK && <p className="rounded-xl bg-green-50 p-3 text-sm text-primary">Preview mode: enter any email and a password of 8+ characters.</p>}
         {message && <p className="rounded-xl bg-red-50 p-3 text-sm text-danger" role="alert">{message}</p>}
         {isRegister && <Field label="Name" error={errors.name}><input className="input" value={form.name} onChange={set('name')} /></Field>}
         <Field label="Email" error={errors.email}><input type="email" className="input" value={form.email} onChange={set('email')} autoComplete="email" /></Field>
