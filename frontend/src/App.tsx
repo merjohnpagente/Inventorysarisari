@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AppLayout from './layouts/AppLayout';
@@ -10,7 +11,7 @@ import Stock from './pages/Stock';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 
-function Protected({ children }) {
+function Protected({ children }: { children: ReactElement }) {
   const { user, loading } = useAuth();
   if (loading) return <Spinner />;
   return user ? children : <Navigate to="/login" replace />;

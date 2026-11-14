@@ -1,41 +1,45 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Download, Printer, Search } from 'lucide-react';
 import useFetch from '../hooks/useFetch';
 import { rows } from '../services/api';
 import { Empty, ErrorBox, Spinner, StatusBadge, fmtDate, peso } from '../components/ui';
+import type { Product, StockMovement } from '../types';
 
-const TABS = {
+type Tab = { label: string; url: string; params: Record<string, string> };
+type Col<T> = [string, (r: T) => string | number | null | undefined];
+const TABS: Record<string, Tab> = {
   total: { label: 'Total Products', url: '/reports/inventory', params: { type: 'total' } },
   current: { label: 'Current Stock', url: '/reports/inventory', params: { type: 'current' } },
   low: { label: 'Low Stock', url: '/reports/low-stock', params: {} },
   out: { label: 'Out of Stock', url: '/reports/inventory', params: { type: 'out' } },
   movements: { label: 'Stock Movements', url: '/reports/stock-movements', params: {} },
 };
-const productCols = [
+const productCols: Col<Product>[] = [
   ['Product', (p) => p.product_name], ['Category', (p) => p.category?.category_name || ''], ['Purchase Price', (p) => p.purchase_price],
   ['Selling Price', (p) => p.selling_price], ['Quantity', (p) => p.quantity], ['Minimum Stock', (p) => p.minimum_stock],
 ];
-const moveCols = [
+const moveCols: Col<StockMovement>[] = [
   ['Date', (m) => m.movement_date], ['Product', (m) => m.product?.product_name || ''], ['Category', (m) => m.product?.category?.category_name || ''],
   ['Type', (m) => m.movement_type], ['Quantity', (m) => m.quantity], ['Remarks', (m) => m.remarks || ''],
 ];
 
 export default function Reports() {
   const [sp] = useSearchParams();
-  const [tab, setTab] = useState(TABS[sp.get('tab')] ? sp.get('tab') : 'total');
-  const [filters, setFilters] = useState({ search: '', category_id: '', from: '', to: '' });
+  const initialTab = sp.get('tab') ?? '';
+  const [tab, setTab] = useState(TABS[initialTab] ? initialTab : 'total');
+  const [filters, setFilters] = useState<Record<string, string>>({ search: '', category_id: '', from: '', to: '' });
   const t = TABS[tab];
   const isMove = tab === 'movements';
   const { data, loading, error, reload } = useFetch(t.url, { ...t.params, ...filters });
   const cats = useFetch('/categories');
-  const list = rows(data);
-  const cols = isMove ? moveCols : productCols;
-  const set = (k) => (e) => setFilters({ ...filters, [k]: e.target.value });
+  const list = rows<any>(data);
+  const cols: Col<any>[] = isMove ? moveCols : productCols;
+  const set = (k: string) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setFilters({ ...filters, [k]: e.target.value });
 
   const exportCsv = () => {
-    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const csv = [cols.map(([h]) => esc(h)).join(','), ...list.map((r) => cols.map(([, f]) => esc(f(r))).join(','))].join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));

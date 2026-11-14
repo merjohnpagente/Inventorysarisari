@@ -1,26 +1,28 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion, useAnimationControls } from 'motion/react';
 import { Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { errMsg, fieldErrors } from '../services/api';
 import { Field } from '../components/ui';
+import { playSound } from '../services/sound';
+import type { FormErrors } from '../types';
 
 export default function Login() {
   const { user, login, register } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const controls = useAnimationControls();
-  const shake = () => controls.start({ x: [0, -10, 10, -8, 8, 0], transition: { duration: 0.4 } });
+  const shake = () => { playSound('error'); return controls.start({ x: [0, -10, 10, -8, 8, 0], transition: { duration: 0.4 } }); };
   if (user) return <Navigate to="/" replace />;
 
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const submit = async (e) => {
+  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const local = {};
+    const local: FormErrors = {};
     if (isRegister && !form.name.trim()) local.name = 'Enter your name.';
     if (isRegister ? !/\S+@\S+\.\S+/.test(form.email) : !form.email.trim()) local.email = isRegister ? 'Enter a valid email address.' : 'Enter your username.';
     if (!form.password) local.password = 'Enter your password.';
@@ -31,6 +33,7 @@ export default function Login() {
     setBusy(true);
     try {
       if (isRegister) await register(form); else await login(form.email, form.password);
+      playSound('success');
     } catch (err) {
       setErrors(fieldErrors(err));
       setMessage(errMsg(err));

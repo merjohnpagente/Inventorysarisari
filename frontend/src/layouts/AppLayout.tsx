@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { Bell, ChevronsLeft, ChevronsRight, FolderTree, LayoutDashboard, LogOut, Menu, Package, Settings, ArrowLeftRight, FileText, Store, X } from 'lucide-react';
+import { Bell, ChevronsLeft, ChevronsRight, FolderTree, LayoutDashboard, LogOut, Menu, Package, Settings, ArrowLeftRight, FileText, Store, Volume2, VolumeX, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import useFetch from '../hooks/useFetch';
+import useSound from '../hooks/useSound';
+import type { Dashboard } from '../types';
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -22,11 +24,12 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [menu, setMenu] = useState(false);
-  const { data: dash } = useFetch('/dashboard', { _: pathname });
+  const { on: soundOn, toggle: toggleSound } = useSound();
+  const { data: dash } = useFetch<Dashboard>('/dashboard', { _: pathname });
   const title = NAV.find((n) => (n.to === '/' ? pathname === '/' : pathname.startsWith(n.to)))?.label || 'SariStore';
   const lowCount = dash?.low_stock_count || 0;
 
-  const Sidebar = ({ mobile }) => (
+  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="flex h-full flex-col bg-white">
       <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
         <div className="rounded-xl bg-primary p-2 text-white"><Store size={20} /></div>
@@ -73,6 +76,9 @@ export default function AppLayout() {
             <h1 className="truncate text-lg font-semibold">{title}</h1>
             <p className="hidden text-xs text-muted sm:block">{new Date().toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
+          <button data-silent className="rounded-xl p-2 text-muted hover:bg-slate-100" onClick={toggleSound} aria-label={soundOn ? 'Mute click sounds' : 'Unmute click sounds'} aria-pressed={soundOn} title={soundOn ? 'Sound on' : 'Sound off'}>
+            {soundOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
+          </button>
           <button className="relative rounded-xl p-2 text-muted hover:bg-slate-100" onClick={() => navigate('/reports?tab=low')} aria-label={`${lowCount} low stock alerts`}>
             <Bell size={20} />
             {lowCount > 0 && <><span className="absolute right-1 top-1 h-4 w-4 animate-ping rounded-full bg-danger/60" /><span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] text-white">{lowCount}</span></>}

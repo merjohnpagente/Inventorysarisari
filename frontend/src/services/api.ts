@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import mockAdapter from './mock';
+import type { FormErrors } from '../types';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const api = axios.create({ baseURL, headers: { Accept: 'application/json' } });
@@ -14,7 +15,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  (err: AxiosError) => {
     const url = err.config?.url || '';
     if (err.response?.status === 401 && !url.includes('/login')) {
       localStorage.removeItem('token');
@@ -24,11 +25,14 @@ api.interceptors.response.use(
   }
 );
 
-export const errMsg = (e) => e.response?.data?.message || 'Something went wrong. Check your connection and try again.';
-export const fieldErrors = (e) => {
-  const errs = e.response?.data?.errors || {};
+interface ApiErrorBody { message?: string; errors?: Record<string, string[]> }
+const body = (e: unknown) => (e as AxiosError<ApiErrorBody>).response?.data;
+
+export const errMsg = (e: unknown): string => body(e)?.message || 'Something went wrong. Check your connection and try again.';
+export const fieldErrors = (e: unknown): FormErrors => {
+  const errs = body(e)?.errors || {};
   return Object.fromEntries(Object.entries(errs).map(([k, v]) => [k, v[0]]));
 };
-export const imgUrl = (path) => (path ? `${baseURL.replace(/\/api\/?$/, '')}/storage/${path}` : null);
-export const rows = (d) => (Array.isArray(d) ? d : d?.data || []);
+export const imgUrl = (path?: string | null) => (path ? `${baseURL.replace(/\/api\/?$/, '')}/storage/${path}` : null);
+export const rows = <T = any>(d: unknown): T[] => (Array.isArray(d) ? d : (d as { data?: T[] } | null)?.data || []);
 export default api;

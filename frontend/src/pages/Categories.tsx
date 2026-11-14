@@ -1,18 +1,19 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { Package, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import api, { errMsg, fieldErrors, rows } from '../services/api';
 import useFetch from '../hooks/useFetch';
 import { Empty, ErrorBox, Field, Modal, Spinner, confirmDelete, toast } from '../components/ui';
+import type { Category, FormErrors } from '../types';
 
-function CategoryForm({ category, onSaved, onClose }) {
+function CategoryForm({ category, onSaved, onClose }: { category?: Category; onSaved: () => void; onClose: () => void }) {
   const [form, setForm] = useState({ category_name: category?.category_name || '', description: category?.description || '' });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [busy, setBusy] = useState(false);
 
-  const submit = async (e) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.category_name.trim()) return setErrors({ category_name: 'Enter a category name.' });
     setBusy(true);
@@ -27,7 +28,7 @@ function CategoryForm({ category, onSaved, onClose }) {
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
       <Field label="Category name" error={errors.category_name}><input className="input" value={form.category_name} onChange={(e) => setForm({ ...form, category_name: e.target.value })} /></Field>
-      <Field label="Description (optional)" error={errors.description}><textarea rows="3" className="input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
+      <Field label="Description (optional)" error={errors.description}><textarea rows={3} className="input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
       <div className="flex justify-end gap-2">
         <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
         <button className="btn-primary" disabled={busy}>{busy ? 'Saving…' : category ? 'Save changes' : 'Add category'}</button>
@@ -38,20 +39,20 @@ function CategoryForm({ category, onSaved, onClose }) {
 
 export default function Categories() {
   const [search, setSearch] = useState('');
-  const [modal, setModal] = useState(null);
+  const [modal, setModal] = useState<{ category?: Category } | null>(null);
   const { data, loading, error, reload } = useFetch('/categories');
-  const all = rows(data);
+  const all = rows<Category>(data);
   const list = all.filter((c) => c.category_name.toLowerCase().includes(search.toLowerCase()));
 
-  const remove = async (c) => {
+  const remove = async (c: Category) => {
     try {
-      if (c.products_count > 0) {
+      if ((c.products_count ?? 0) > 0) {
         const others = all.filter((x) => x.id !== c.id);
         const options = Object.fromEntries(others.map((x) => [x.id, x.category_name]));
         const res = await Swal.fire({
           title: `Reassign ${c.products_count} product(s)`,
           text: `"${c.category_name}" still has products. Choose where to move them before deleting.`,
-          input: 'select', inputOptions: options, inputPlaceholder: 'Select category',
+          input: 'select', inputOptions: options as Record<string, string>, inputPlaceholder: 'Select category',
           showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'Reassign and delete',
           inputValidator: (v) => (v ? undefined : 'Choose a category to move the products to.'),
         });

@@ -1,29 +1,31 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
-import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
+import { useState, type ChangeEvent, type ComponentType, type FormEvent } from 'react';
+import { ArrowDownToLine, ArrowUpFromLine, type LucideProps } from 'lucide-react';
 import api, { errMsg, fieldErrors, rows } from '../services/api';
 import useFetch from '../hooks/useFetch';
-import { Empty, ErrorBox, Field, Pagination, Spinner, StatusBadge, fmtDate, toast } from '../components/ui';
+import { Empty, ErrorBox, Field, Pagination, Spinner, fmtDate, toast } from '../components/ui';
+import type { FormErrors, Paginated, Product, StockMovement } from '../types';
 
+const TYPES: ['IN' | 'OUT', string, ComponentType<LucideProps>][] = [['IN', 'Stock In', ArrowDownToLine], ['OUT', 'Stock Out', ArrowUpFromLine]];
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function Stock() {
-  const [type, setType] = useState('IN');
+  const [type, setType] = useState<'IN' | 'OUT'>('IN');
   const [form, setForm] = useState({ product_id: '', quantity: '', movement_date: today(), remarks: '' });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState('');
   const [page, setPage] = useState(1);
 
-  const products = useFetch('/products', { per_page: 500, sort: 'product_name', dir: 'asc' });
-  const history = useFetch('/stock-movements', { movement_type: filter, page });
-  const productList = rows(products.data);
+  const products = useFetch<Paginated<Product>>('/products', { per_page: 500, sort: 'product_name', dir: 'asc' });
+  const history = useFetch<Paginated<StockMovement>>('/stock-movements', { movement_type: filter, page });
+  const productList = rows<Product>(products.data);
   const selected = productList.find((p) => String(p.id) === String(form.product_id));
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const set = (k: string) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
 
-  const submit = async (e) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const local = {};
+    const local: FormErrors = {};
     if (!form.product_id) local.product_id = 'Select a product.';
     if (!(Number(form.quantity) > 0)) local.quantity = 'Enter a quantity greater than 0.';
     if (type === 'OUT' && selected && Number(form.quantity) > selected.quantity) local.quantity = `Only ${selected.quantity} in stock.`;
@@ -40,13 +42,13 @@ export default function Stock() {
     finally { setBusy(false); }
   };
 
-  const list = rows(history.data);
+  const list = rows<StockMovement>(history.data);
 
   return (
     <div className="grid gap-6 xl:grid-cols-3">
       <form onSubmit={submit} className="card h-fit space-y-4 p-5" noValidate>
         <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
-          {[['IN', 'Stock In', ArrowDownToLine], ['OUT', 'Stock Out', ArrowUpFromLine]].map(([t, label, Icon]) => (
+          {TYPES.map(([t, label, Icon]) => (
             <button type="button" key={t} onClick={() => { setType(t); setErrors({}); }}
               className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-colors ${type === t ? 'bg-white text-primary shadow-sm' : 'text-muted'}`}>
               <Icon size={16} />{label}
@@ -62,7 +64,7 @@ export default function Stock() {
         {selected && <p className="-mt-2 text-sm text-muted">Current stock: <span className="font-medium text-ink">{selected.quantity}</span></p>}
         <Field label="Quantity" error={errors.quantity}><input type="number" min="1" className="input" value={form.quantity} onChange={set('quantity')} /></Field>
         <Field label="Date" error={errors.movement_date}><input type="date" className="input" value={form.movement_date} onChange={set('movement_date')} /></Field>
-        <Field label="Remarks (optional)" error={errors.remarks}><textarea rows="2" className="input" value={form.remarks} onChange={set('remarks')} /></Field>
+        <Field label="Remarks (optional)" error={errors.remarks}><textarea rows={2} className="input" value={form.remarks} onChange={set('remarks')} /></Field>
         <button className="btn-primary w-full" disabled={busy}>{busy ? 'Saving…' : type === 'IN' ? 'Record stock in' : 'Record stock out'}</button>
       </form>
 

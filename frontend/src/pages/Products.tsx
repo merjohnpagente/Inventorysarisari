@@ -1,33 +1,41 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Eye, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import api, { errMsg, fieldErrors, imgUrl, rows } from '../services/api';
 import useFetch from '../hooks/useFetch';
 import { Empty, ErrorBox, Field, Modal, Pagination, Spinner, StatusBadge, confirmDelete, fmtDate, peso, toast } from '../components/ui';
+import type { Category, FormErrors, Paginated, Product } from '../types';
 
 const blank = { product_name: '', category_id: '', purchase_price: '', selling_price: '', quantity: '', minimum_stock: '5', description: '' };
+type FormState = typeof blank;
+type ModalState = { mode: 'add' | 'edit' | 'view'; product?: Product } | null;
 
-function ProductForm({ product, categories, onSaved, onClose }) {
+const toForm = (p?: Product): FormState => p ? {
+  product_name: p.product_name, category_id: String(p.category_id), purchase_price: String(p.purchase_price), selling_price: String(p.selling_price),
+  quantity: String(p.quantity), minimum_stock: String(p.minimum_stock), description: p.description || '',
+} : blank;
+
+function ProductForm({ product, categories, onSaved, onClose }: { product?: Product; categories: Category[]; onSaved: () => void; onClose: () => void }) {
   const editing = !!product;
-  const [form, setForm] = useState(editing ? { ...blank, ...product, description: product.description || '' } : blank);
-  const [image, setImage] = useState(null);
-  const [errors, setErrors] = useState({});
+  const [form, setForm] = useState<FormState>(toForm(product));
+  const [image, setImage] = useState<File | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [busy, setBusy] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const set = (k: keyof FormState) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
 
-  const submit = async (e) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const local = {};
+    const local: FormErrors = {};
     if (!form.product_name.trim()) local.product_name = 'Enter a product name.';
     if (!form.category_id) local.category_id = 'Choose a category.';
-    ['purchase_price', 'selling_price', 'quantity', 'minimum_stock'].forEach((k) => {
+    (['purchase_price', 'selling_price', 'quantity', 'minimum_stock'] as const).forEach((k) => {
       if (form[k] === '' || Number(form[k]) < 0) local[k] = 'Enter a number, 0 or higher.';
     });
     setErrors(local);
     if (Object.keys(local).length) return;
     const fd = new FormData();
-    ['product_name', 'category_id', 'purchase_price', 'selling_price', 'quantity', 'minimum_stock', 'description'].forEach((k) => fd.append(k, form[k] ?? ''));
+    (['product_name', 'category_id', 'purchase_price', 'selling_price', 'quantity', 'minimum_stock', 'description'] as const).forEach((k) => fd.append(k, form[k] ?? ''));
     if (image) fd.append('product_image', image);
     if (editing) fd.append('_method', 'PUT');
     setBusy(true);
@@ -56,8 +64,8 @@ function ProductForm({ product, categories, onSaved, onClose }) {
         <Field label={editing ? 'Stock quantity' : 'Initial stock'} error={errors.quantity}><input type="number" min="0" className="input" value={form.quantity} onChange={set('quantity')} /></Field>
         <Field label="Minimum stock level" error={errors.minimum_stock}><input type="number" min="0" className="input" value={form.minimum_stock} onChange={set('minimum_stock')} /></Field>
       </div>
-      <Field label="Product image (optional)" error={errors.product_image}><input type="file" accept="image/*" className="input" onChange={(e) => setImage(e.target.files[0])} /></Field>
-      <Field label="Description (optional)" error={errors.description}><textarea rows="3" className="input" value={form.description} onChange={set('description')} /></Field>
+      <Field label="Product image (optional)" error={errors.product_image}><input type="file" accept="image/*" className="input" onChange={(e) => setImage(e.target.files?.[0] ?? null)} /></Field>
+      <Field label="Description (optional)" error={errors.description}><textarea rows={3} className="input" value={form.description} onChange={set('description')} /></Field>
       <div className="flex justify-end gap-2">
         <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
         <button className="btn-primary" disabled={busy}>{busy ? 'Saving…' : editing ? 'Save changes' : 'Add product'}</button>
@@ -66,9 +74,9 @@ function ProductForm({ product, categories, onSaved, onClose }) {
   );
 }
 
-const Detail = ({ product: p }) => (
+const Detail = ({ product: p }: { product: Product }) => (
   <div className="space-y-3 text-sm">
-    {imgUrl(p.product_image) && <img src={imgUrl(p.product_image)} alt={p.product_name} className="h-40 w-full rounded-xl object-cover" />}
+    {imgUrl(p.product_image) && <img src={imgUrl(p.product_image) ?? undefined} alt={p.product_name} className="h-40 w-full rounded-xl object-cover" />}
     <p className="text-lg font-semibold">{p.product_name}</p>
     <p className="text-muted">{p.description || 'No description.'}</p>
     <dl className="grid grid-cols-2 gap-3">
@@ -88,15 +96,15 @@ export default function Products() {
   const [sort, setSort] = useState('created_at');
   const [dir, setDir] = useState('desc');
   const [page, setPage] = useState(1);
-  const [modal, setModal] = useState(null);
+  const [modal, setModal] = useState<ModalState>(null);
 
   useEffect(() => { const t = setTimeout(() => { setQ(search); setPage(1); }, 350); return () => clearTimeout(t); }, [search]);
-  const { data, loading, error, reload } = useFetch('/products', { search: q, category_id: category, sort, dir, page });
+  const { data, loading, error, reload } = useFetch<Paginated<Product>>('/products', { search: q, category_id: category, sort, dir, page });
   const { data: catData } = useFetch('/categories');
-  const categories = rows(catData);
-  const list = rows(data);
+  const categories = rows<Category>(catData);
+  const list = rows<Product>(data);
 
-  const remove = async (p) => {
+  const remove = async (p: Product) => {
     if (!(await confirmDelete(`"${p.product_name}" and its stock history will be removed.`))) return;
     try { await api.delete(`/products/${p.id}`); toast('success', 'Product deleted'); reload(); }
     catch (e) { toast('error', errMsg(e)); }
@@ -160,7 +168,7 @@ export default function Products() {
       </div>
 
       <AnimatePresence>{modal && (<Modal key="modal" title={{ add: 'Add product', edit: 'Edit product', view: 'Product details' }[modal.mode]} onClose={() => setModal(null)}>
-          {modal.mode === 'view' ? <Detail product={modal.product} /> : <ProductForm product={modal.product} categories={categories} onSaved={done} onClose={() => setModal(null)} />}
+          {modal.mode === 'view' ? <Detail product={modal.product!} /> : <ProductForm product={modal.product} categories={categories} onSaved={done} onClose={() => setModal(null)} />}
         </Modal>)}</AnimatePresence>
     </div>
   );

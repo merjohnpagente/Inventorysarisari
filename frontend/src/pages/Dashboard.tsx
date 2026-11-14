@@ -1,10 +1,12 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, FolderTree, Layers, Package } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useFetch from '../hooks/useFetch';
 import { Empty, ErrorBox, Spinner, StatCard, StatusBadge, fmtDate } from '../components/ui';
+import type { Dashboard as DashboardData, Product } from '../types';
 
-const List = ({ title, items, render, link }) => (
+const List = ({ title, items, render, link }: { title: string; items?: Product[]; render: (p: Product) => ReactNode; link?: string }) => (
   <div className="card p-5">
     <div className="mb-3 flex items-center justify-between">
       <h2 className="font-semibold">{title}</h2>
@@ -15,7 +17,7 @@ const List = ({ title, items, render, link }) => (
 );
 
 export default function Dashboard() {
-  const { data, loading, error, reload } = useFetch('/dashboard');
+  const { data, loading, error, reload } = useFetch<DashboardData>('/dashboard');
   if (loading) return <Spinner />;
   if (error) return <ErrorBox message={error} onRetry={reload} />;
   const d = data || {};

@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import api, { errMsg, fieldErrors } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import useFetch from '../hooks/useFetch';
 import { Field, Spinner, toast } from '../components/ui';
+import type { FormErrors } from '../types';
 
-function Section({ title, children }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return <section className="card space-y-4 p-6"><h2 className="font-semibold">{title}</h2>{children}</section>;
 }
 
-function useForm(initial, submitFn, success) {
-  const [form, setForm] = useState(initial);
-  const [errors, setErrors] = useState({});
+function useForm<T extends Record<string, string>>(initial: T, submitFn: (f: T) => Promise<unknown>, success: string) {
+  const [form, setForm] = useState<T>(initial);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [busy, setBusy] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const submit = async (e, validate) => {
+  const set = (k: keyof T) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
+  const submit = async (e: FormEvent, validate?: (f: T) => FormErrors) => {
     e.preventDefault();
-    const local = validate ? validate(form) : {};
+    const local: FormErrors = validate ? validate(form) : {};
     setErrors(local);
     if (Object.keys(local).length) return;
     setBusy(true);
@@ -44,9 +45,9 @@ export default function Settings() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 stagger">
       <Section title="Store information">
-        <form className="space-y-4" noValidate onSubmit={(e) => store.submit(e, (f) => (f.store_name.trim() ? {} : { store_name: 'Enter your store name.' }))}>
+        <form className="space-y-4" noValidate onSubmit={(e) => store.submit(e, (f): FormErrors => (f.store_name.trim() ? {} : { store_name: 'Enter your store name.' }))}>
           <Field label="Store name" error={store.errors.store_name}><input className="input" value={store.form.store_name} onChange={store.set('store_name')} /></Field>
-          <Field label="Store description" error={store.errors.store_description}><textarea rows="3" className="input" value={store.form.store_description} onChange={store.set('store_description')} /></Field>
+          <Field label="Store description" error={store.errors.store_description}><textarea rows={3} className="input" value={store.form.store_description} onChange={store.set('store_description')} /></Field>
           <button className="btn-primary" disabled={store.busy}>{store.busy ? 'Saving…' : 'Save changes'}</button>
         </form>
       </Section>
