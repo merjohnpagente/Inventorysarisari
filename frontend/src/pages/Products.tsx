@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Eye, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Eye, Image as ImageIcon, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import api, { errMsg, fieldErrors, imgUrl, rows } from '../services/api';
 import useFetch from '../hooks/useFetch';
 import { Empty, ErrorBox, Field, Modal, Pagination, Spinner, StatusBadge, confirmDelete, fmtDate, peso, toast } from '../components/ui';
@@ -145,7 +145,7 @@ export default function Products() {
                 <AnimatePresence initial={false}>{list.map((p, i) => (
 <motion.tr key={p.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 32 }} transition={{ delay: Math.min(i, 10) * 0.03, duration: 0.3 }} className="hover:bg-slate-50">
                     <td className="td text-muted">{p.id}</td>
-                    <td className="td font-medium">{p.product_name}</td>
+                    <td className="td font-medium"><div className="flex items-center gap-3">{imgUrl(p.product_image) ? <img src={imgUrl(p.product_image) ?? undefined} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" loading="lazy" /> : <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-300"><ImageIcon size={16} /></div>}<span>{p.product_name}</span></div></td>
                     <td className="td">{p.category?.category_name || '—'}</td>
                     <td className="td">{peso(p.purchase_price)}</td>
                     <td className="td">{peso(p.selling_price)}</td>

@@ -35,6 +35,10 @@ function filterProducts(list: Product[], q: Body) {
   const s = (q.search || '').toLowerCase();
   return list.filter((p) => (!s || p.product_name.toLowerCase().includes(s)) && (!q.category_id || String(p.category_id) === String(q.category_id)));
 }
+// Keep an uploaded picture visible for the session (the preview has no server to store it).
+const pickImage = (b: Body, fallback: string | null = null) =>
+  typeof File !== 'undefined' && b.product_image instanceof File && b.product_image.size > 0 ? URL.createObjectURL(b.product_image) : fallback;
+
 function validateProduct(b: Body) {
   const e: Record<string, string[]> = {};
   if (!String(b.product_name || '').trim()) e.product_name = ['The product name field is required.'];
@@ -64,7 +68,7 @@ function handle(config: InternalAxiosRequestConfig): Result {
   let b: Body = {};
   if (config.data instanceof FormData) b = Object.fromEntries((config.data as FormData).entries());
   else if (typeof config.data === 'string') b = JSON.parse(config.data);
-  const [, res, id] = url.match(/^\/([\w-]+(?:\/[\w-]+)?)(?:\/(\d+))?$/) || [];
+  const [, res, id] = url.match(/^\/([\w-]+)(?:\/(\d+))?$/) || [];
   const pid = id && +id;
 
   if (url === '/login' || url === '/register') return ok({ token: 'demo', user });
@@ -94,13 +98,13 @@ function handle(config: InternalAxiosRequestConfig): Result {
     }
     if (!id && method === 'post') {
       const err = validateProduct(b); if (err) return err;
-      const p: Product = { id: nextP++, product_image: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: b.description || '', product_name: b.product_name, category_id: +b.category_id, purchase_price: num(b.purchase_price), selling_price: num(b.selling_price), quantity: num(b.quantity), minimum_stock: num(b.minimum_stock) };
+      const p: Product = { id: nextP++, product_image: pickImage(b), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), description: b.description || '', product_name: b.product_name, category_id: +b.category_id, purchase_price: num(b.purchase_price), selling_price: num(b.selling_price), quantity: num(b.quantity), minimum_stock: num(b.minimum_stock) };
       products.push(p); return ok(withCat(p));
     }
     if (id && method === 'post') {
       const err = validateProduct(b); if (err) return err;
       const p = products.find((x) => x.id === pid); if (!p) return fail(404, 'Product not found.');
-      Object.assign(p, { product_name: b.product_name, category_id: +b.category_id, description: b.description || '', purchase_price: num(b.purchase_price), selling_price: num(b.selling_price), quantity: num(b.quantity), minimum_stock: num(b.minimum_stock), updated_at: new Date().toISOString() });
+      Object.assign(p, { product_image: pickImage(b, p.product_image ?? null), product_name: b.product_name, category_id: +b.category_id, description: b.description || '', purchase_price: num(b.purchase_price), selling_price: num(b.selling_price), quantity: num(b.quantity), minimum_stock: num(b.minimum_stock), updated_at: new Date().toISOString() });
       return ok(withCat(p));
     }
     if (id && method === 'delete') { products = products.filter((x) => x.id !== pid); moves = moves.filter((m) => m.product_id !== pid); return ok({}); }

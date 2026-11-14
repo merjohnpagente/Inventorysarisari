@@ -33,6 +33,10 @@ export const fieldErrors = (e: unknown): FormErrors => {
   const errs = body(e)?.errors || {};
   return Object.fromEntries(Object.entries(errs).map(([k, v]) => [k, v[0]]));
 };
-export const imgUrl = (path?: string | null) => (path ? `${baseURL.replace(/\/api\/?$/, '')}/storage/${path}` : null);
+export const imgUrl = (path?: string | null) => {
+  if (!path) return null;
+  if (/^(blob:|data:|https?:)/.test(path)) return path; // already a full URL (preview uploads, CDN)
+  return `${baseURL.replace(/\/api\/?$/, '')}/storage/${path}`;
+};
 export const rows = <T = any>(d: unknown): T[] => (Array.isArray(d) ? d : (d as { data?: T[] } | null)?.data || []);
 export default api;
