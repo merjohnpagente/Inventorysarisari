@@ -19,8 +19,9 @@ export default function Login() {
     e.preventDefault();
     const local = {};
     if (isRegister && !form.name.trim()) local.name = 'Enter your name.';
-    if (!/\S+@\S+\.\S+/.test(form.email)) local.email = 'Enter a valid email address.';
-    if (form.password.length < 8) local.password = 'Password must be at least 8 characters.';
+    if (isRegister ? !/\S+@\S+\.\S+/.test(form.email) : !form.email.trim()) local.email = isRegister ? 'Enter a valid email address.' : 'Enter your username.';
+    if (!form.password) local.password = 'Enter your password.';
+    else if (isRegister && form.password.length < 8) local.password = 'Password must be at least 8 characters.';
     if (isRegister && form.password !== form.password_confirmation) local.password_confirmation = 'Passwords do not match.';
     setErrors(local); setMessage('');
     if (Object.keys(local).length) return;
@@ -41,12 +42,12 @@ export default function Login() {
           <h1 className="text-xl font-semibold text-primary">SariStore</h1>
           <p className="text-sm text-muted">{isRegister ? 'Create the administrator account' : 'Sign in to manage your inventory'}</p>
         </div>
-        {import.meta.env.VITE_MOCK && <p className="rounded-xl bg-green-50 p-3 text-sm text-primary">Preview mode: enter any email and a password of 8+ characters.</p>}
+        {import.meta.env.VITE_MOCK && <p className="rounded-xl bg-green-50 p-3 text-sm text-primary">Preview mode: enter any username and password.</p>}
         {message && <p className="rounded-xl bg-red-50 p-3 text-sm text-danger" role="alert">{message}</p>}
-        {isRegister && <Field label="Name" error={errors.name}><input className="input" value={form.name} onChange={set('name')} /></Field>}
-        <Field label="Email" error={errors.email}><input type="email" className="input" value={form.email} onChange={set('email')} autoComplete="email" /></Field>
-        <Field label="Password" error={errors.password}><input type="password" className="input" value={form.password} onChange={set('password')} autoComplete={isRegister ? 'new-password' : 'current-password'} /></Field>
-        {isRegister && <Field label="Confirm password" error={errors.password_confirmation}><input type="password" className="input" value={form.password_confirmation} onChange={set('password_confirmation')} /></Field>}
+        {isRegister && <Field label="Name" error={errors.name}><input className="input" placeholder="Enter name" value={form.name} onChange={set('name')} autoComplete="name" /></Field>}
+        <Field label={isRegister ? 'Email' : 'Username'} error={errors.email}><input type={isRegister ? 'email' : 'text'} className="input" placeholder={isRegister ? 'Enter email' : 'Enter username'} value={form.email} onChange={set('email')} autoComplete={isRegister ? 'email' : 'username'} /></Field>
+        <Field label="Password" error={errors.password}><input type="password" className="input" placeholder="Enter password" value={form.password} onChange={set('password')} autoComplete={isRegister ? 'new-password' : 'current-password'} /></Field>
+        {isRegister && <Field label="Confirm password" error={errors.password_confirmation}><input type="password" className="input" placeholder="Confirm password" value={form.password_confirmation} onChange={set('password_confirmation')} /></Field>}
         <button className="btn-primary w-full" disabled={busy}>{busy ? 'Please wait…' : isRegister ? 'Create account' : 'Sign in'}</button>
         <button type="button" className="w-full text-center text-sm text-muted hover:text-primary" onClick={() => { setIsRegister(!isRegister); setErrors({}); setMessage(''); }}>
           {isRegister ? 'Back to sign in' : 'Initial setup? Create admin account'}
