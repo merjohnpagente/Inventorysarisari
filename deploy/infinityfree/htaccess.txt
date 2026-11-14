@@ -1,0 +1,28 @@
+# SariStore on InfinityFree: put this file in htdocs/ and rename it to ".htaccess"
+# (use the File Manager's rename; Windows will not let you create a dot-file easily).
+#
+# Layout it expects inside htdocs/:
+#   app/ bootstrap/ config/ vendor/ storage/ .env ...   <- contents of backend/
+#   public/                                              <- Laravel public/ + the frontend build
+#   public/app.html                                      <- frontend dist/index.html, renamed
+#
+# UNTESTED on a live InfinityFree account. If a rule misbehaves, see README.md.
+
+RewriteEngine On
+
+# 1. Requests that already point into /public/ are handled by public/.htaccess.
+RewriteRule ^public/ - [L]
+
+# 2. Uploaded product images (no symlinks on InfinityFree, so storage:link will not work).
+RewriteRule ^storage/(.*)$ /storage/app/public/$1 [END]
+
+# 3. API calls go to Laravel.
+RewriteRule ^api(/.*)?$ /public/$0 [L]
+
+# 4. Real files of the frontend (JS, CSS, images) are served as they are.
+RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+RewriteRule ^ /public%{REQUEST_URI} [L]
+
+# 5. Everything else is a frontend page (React Router), so it gets the app shell.
+#    This also means /.env, /vendor/... and other private paths never show their contents.
+RewriteRule ^ /public/app.html [L]
