@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { motion, useAnimationControls } from 'motion/react';
 import { Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { errMsg, fieldErrors } from '../services/api';
@@ -12,6 +13,8 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const controls = useAnimationControls();
+  const shake = () => controls.start({ x: [0, -10, 10, -8, 8, 0], transition: { duration: 0.4 } });
   if (user) return <Navigate to="/" replace />;
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -24,21 +27,23 @@ export default function Login() {
     else if (isRegister && form.password.length < 8) local.password = 'Password must be at least 8 characters.';
     if (isRegister && form.password !== form.password_confirmation) local.password_confirmation = 'Passwords do not match.';
     setErrors(local); setMessage('');
-    if (Object.keys(local).length) return;
+    if (Object.keys(local).length) { shake(); return; }
     setBusy(true);
     try {
       if (isRegister) await register(form); else await login(form.email, form.password);
     } catch (err) {
       setErrors(fieldErrors(err));
       setMessage(errMsg(err));
+      shake();
     } finally { setBusy(false); }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <form onSubmit={submit} className="card w-full max-w-sm space-y-4 p-8" noValidate>
+      <motion.div className="w-full max-w-sm" initial={{ opacity: 0, scale: 0.94, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', damping: 22, stiffness: 260 }}>
+      <motion.form animate={controls} onSubmit={submit} className="card w-full space-y-4 p-8" noValidate>
         <div className="flex flex-col items-center gap-2 pb-2">
-          <div className="rounded-2xl bg-primary p-3 text-white"><Store size={28} /></div>
+          <div className="anim-float rounded-2xl bg-primary p-3 text-white"><Store size={28} /></div>
           <h1 className="text-xl font-semibold text-primary">SariStore</h1>
           <p className="text-sm text-muted">{isRegister ? 'Create the administrator account' : 'Sign in to manage your inventory'}</p>
         </div>
@@ -52,7 +57,8 @@ export default function Login() {
         <button type="button" className="w-full text-center text-sm text-muted hover:text-primary" onClick={() => { setIsRegister(!isRegister); setErrors({}); setMessage(''); }}>
           {isRegister ? 'Back to sign in' : 'Initial setup? Create admin account'}
         </button>
-      </form>
+      </motion.form>
+      </motion.div>
     </div>
   );
 }

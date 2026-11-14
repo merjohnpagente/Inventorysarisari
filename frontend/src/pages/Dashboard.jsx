@@ -10,7 +10,7 @@ const List = ({ title, items, render, link }) => (
       <h2 className="font-semibold">{title}</h2>
       {link && <Link to={link} className="text-sm text-primary hover:underline">View all</Link>}
     </div>
-    {items?.length ? <ul className="divide-y divide-slate-100">{items.map(render)}</ul> : <Empty title="Nothing here yet" text="Items will appear as you add products and record stock." />}
+    {items?.length ? <ul className="divide-y divide-slate-100 stagger">{items.map(render)}</ul> : <Empty title="Nothing here yet" text="Items will appear as you add products and record stock." />}
   </div>
 );
 
@@ -21,7 +21,7 @@ export default function Dashboard() {
   const d = data || {};
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 stagger">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={Package} label="Total Products" value={d.total_products ?? 0} />
         <StatCard icon={FolderTree} label="Total Categories" value={d.total_categories ?? 0} tone="bg-sky-50 text-sky-700" />
@@ -39,7 +39,7 @@ export default function Dashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748B' }} interval={0} />
                 <YAxis tick={{ fontSize: 12, fill: '#64748B' }} allowDecimals={false} />
                 <Tooltip cursor={{ fill: '#F1F5F9' }} />
-                <Bar dataKey="quantity" name="Quantity" fill="#22C55E" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="quantity" name="Quantity" fill="#22C55E" radius={[6, 6, 0, 0]} animationDuration={900} />
               </BarChart>
             </ResponsiveContainer>
           </div>

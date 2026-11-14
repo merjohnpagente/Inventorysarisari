@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 import api, { errMsg, fieldErrors, rows } from '../services/api';
@@ -79,16 +80,16 @@ export default function Stock() {
             <table className="w-full">
               <thead className="bg-slate-50"><tr>{['Date', 'Product', 'Type', 'Qty', 'Remarks', 'By'].map((h) => <th key={h} className="th">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {list.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50">
+                <AnimatePresence initial={false}>{list.map((m, i) => (
+<motion.tr key={m.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 32 }} transition={{ delay: Math.min(i, 10) * 0.03, duration: 0.3 }} className="hover:bg-slate-50">
                     <td className="td whitespace-nowrap">{fmtDate(m.movement_date)}</td>
                     <td className="td font-medium">{m.product?.product_name}</td>
                     <td className="td"><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${m.movement_type === 'IN' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{m.movement_type === 'IN' ? 'Stock In' : 'Stock Out'}</span></td>
                     <td className="td">{m.quantity}</td>
                     <td className="td text-muted">{m.remarks || '—'}</td>
                     <td className="td text-muted">{m.user?.name || '—'}</td>
-                  </tr>
-                ))}
+                  </motion.tr>
+                ))}</AnimatePresence>
               </tbody>
             </table>
           </div>

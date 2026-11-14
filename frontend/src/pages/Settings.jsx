@@ -42,7 +42,7 @@ export default function Settings() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6 stagger">
       <Section title="Store information">
         <form className="space-y-4" noValidate onSubmit={(e) => store.submit(e, (f) => (f.store_name.trim() ? {} : { store_name: 'Enter your store name.' }))}>
           <Field label="Store name" error={store.errors.store_name}><input className="input" value={store.form.store_name} onChange={store.set('store_name')} /></Field>

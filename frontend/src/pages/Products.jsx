@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Eye, Pencil, Plus, Search, Trash2 } from 'lucide-react';
@@ -133,8 +134,8 @@ export default function Products() {
             <table className="w-full">
               <thead className="bg-slate-50"><tr>{['ID', 'Product', 'Category', 'Purchase', 'Selling', 'Stock', 'Status', ''].map((h) => <th key={h} className="th">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {list.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50">
+                <AnimatePresence initial={false}>{list.map((p, i) => (
+<motion.tr key={p.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 32 }} transition={{ delay: Math.min(i, 10) * 0.03, duration: 0.3 }} className="hover:bg-slate-50">
                     <td className="td text-muted">{p.id}</td>
                     <td className="td font-medium">{p.product_name}</td>
                     <td className="td">{p.category?.category_name || '—'}</td>
@@ -149,8 +150,8 @@ export default function Products() {
                         <button className="rounded-lg p-2 text-danger hover:bg-red-50" onClick={() => remove(p)} aria-label="Delete"><Trash2 size={16} /></button>
                       </div>
                     </td>
-                  </tr>
-                ))}
+                  </motion.tr>
+                ))}</AnimatePresence>
               </tbody>
             </table>
           </div>
@@ -158,11 +159,9 @@ export default function Products() {
         <Pagination meta={data} onPage={setPage} />
       </div>
 
-      {modal && (
-        <Modal title={{ add: 'Add product', edit: 'Edit product', view: 'Product details' }[modal.mode]} onClose={() => setModal(null)}>
+      <AnimatePresence>{modal && (<Modal key="modal" title={{ add: 'Add product', edit: 'Edit product', view: 'Product details' }[modal.mode]} onClose={() => setModal(null)}>
           {modal.mode === 'view' ? <Detail product={modal.product} /> : <ProductForm product={modal.product} categories={categories} onSaved={done} onClose={() => setModal(null)} />}
-        </Modal>
-      )}
+        </Modal>)}</AnimatePresence>
     </div>
   );
 }

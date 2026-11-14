@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -78,9 +79,9 @@ export default function Categories() {
       {loading ? <Spinner /> : error ? <ErrorBox message={error} onRetry={reload} /> : !list.length ? (
         <div className="card"><Empty title="No categories found" text={search ? 'Try a different search.' : 'Add a category to organize your products.'} /></div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 stagger sm:grid-cols-2 xl:grid-cols-3">
           {list.map((c) => (
-            <div key={c.id} className="card flex flex-col gap-3 p-5">
+            <div key={c.id} className="card card-hover flex flex-col gap-3 p-5">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="font-semibold">{c.category_name}</h3>
@@ -99,11 +100,9 @@ export default function Categories() {
         </div>
       )}
 
-      {modal && (
-        <Modal title={modal.category ? 'Edit category' : 'Add category'} onClose={() => setModal(null)}>
+      <AnimatePresence>{modal && (<Modal key="modal" title={modal.category ? 'Edit category' : 'Add category'} onClose={() => setModal(null)}>
           <CategoryForm category={modal.category} onClose={() => setModal(null)} onSaved={() => { setModal(null); reload(); }} />
-        </Modal>
-      )}
+        </Modal>)}</AnimatePresence>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Download, Printer, Search } from 'lucide-react';
@@ -78,12 +79,12 @@ export default function Reports() {
             <table className="w-full">
               <thead className="bg-slate-50"><tr>{cols.map(([h]) => <th key={h} className="th">{h}</th>)}{!isMove && <th className="th">Status</th>}</tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {list.map((r) => (
-                  <tr key={r.id}>
+                <AnimatePresence initial={false}>{list.map((r, i) => (
+<motion.tr key={r.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 32 }} transition={{ delay: Math.min(i, 10) * 0.03, duration: 0.3 }}>
                     {cols.map(([h, f]) => <td key={h} className="td">{h.includes('Price') ? peso(f(r)) : h === 'Date' ? fmtDate(f(r)) : f(r)}</td>)}
                     {!isMove && <td className="td"><StatusBadge product={r} /></td>}
-                  </tr>
-                ))}
+                  </motion.tr>
+                ))}</AnimatePresence>
               </tbody>
             </table>
           </div>
