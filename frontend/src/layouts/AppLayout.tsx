@@ -30,8 +30,8 @@ export default function AppLayout() {
   const lowCount = dash?.low_stock_count || 0;
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className="flex h-full flex-col bg-white">
-      <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
+    <div className="flex h-full flex-col bg-sidebar">
+      <div className="flex h-16 items-center gap-3 border-b border-green-900/10 px-5">
         <div className="rounded-xl bg-primary p-2 text-white"><Store size={20} /></div>
         {(mobile || !collapsed) && <span className="text-lg font-semibold text-primary">SariStore</span>}
         {mobile && <button className="ml-auto p-1" onClick={() => setDrawer(false)} aria-label="Close menu"><X size={20} /></button>}
@@ -39,18 +39,18 @@ export default function AppLayout() {
       <nav className="flex-1 space-y-1 p-3">
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} end={to === '/'} onClick={() => setDrawer(false)} title={label}
-            className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all hover:translate-x-0.5 ${isActive ? 'bg-green-50 text-primary border-l-4 border-primary' : 'text-muted hover:bg-slate-50 border-l-4 border-transparent'}`}>
+            className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all hover:translate-x-0.5 ${isActive ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-primary'}`}>
             <Icon size={20} className="shrink-0 transition-transform group-hover:scale-110" />
             {(mobile || !collapsed) && label}
           </NavLink>
         ))}
       </nav>
-      <div className="space-y-1 border-t border-slate-100 p-3">
+      <div className="space-y-1 border-t border-green-900/10 p-3">
         <button onClick={logout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-danger hover:bg-red-50">
           <LogOut size={20} className="shrink-0" />{(mobile || !collapsed) && 'Logout'}
         </button>
         {!mobile && (
-          <button onClick={() => setCollapsed(!collapsed)} className="hidden w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-slate-50 lg:flex" aria-label="Toggle sidebar">
+          <button onClick={() => setCollapsed(!collapsed)} className="hidden w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-white lg:flex" aria-label="Toggle sidebar">
             {collapsed ? <ChevronsRight size={20} /> : <><ChevronsLeft size={20} />Collapse</>}
           </button>
         )}
@@ -98,7 +98,7 @@ export default function AppLayout() {
         </header>
         <main className="p-4 sm:p-6">
           <AnimatePresence mode="wait">
-            <motion.div key={pathname} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: 'easeOut' }}>{outlet}</motion.div>
+            <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}>{outlet}</motion.div>
           </AnimatePresence>
         </main>
       </div>

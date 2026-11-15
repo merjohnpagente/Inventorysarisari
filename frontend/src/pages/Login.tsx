@@ -42,11 +42,27 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <aside className="hidden flex-col justify-between bg-primary p-12 text-white lg:flex">
+        <div className="flex items-center gap-3"><Store size={24} /><span className="text-lg font-semibold">SariStore</span></div>
+        <div className="max-w-md">
+          <h2 className="text-balance text-4xl font-semibold leading-tight tracking-tight">Know what is on your shelf before it runs out.</h2>
+          <p className="mt-4 text-green-100">Track products, record stock in and out, and spot low items at a glance. Made for small sari-sari stores.</p>
+        </div>
+        <svg viewBox="0 0 480 150" className="w-full max-w-md" fill="none" stroke="#86EFAC" strokeOpacity="0.55" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+          <path d="M8 142h464M8 76h464" />
+          <rect x="24" y="36" width="34" height="40" rx="4" /><rect x="66" y="22" width="30" height="54" rx="4" /><rect x="104" y="44" width="44" height="32" rx="4" />
+          <rect x="176" y="30" width="26" height="46" rx="13" /><rect x="210" y="30" width="26" height="46" rx="13" /><rect x="244" y="40" width="52" height="36" rx="4" />
+          <rect x="330" y="26" width="40" height="50" rx="4" /><rect x="378" y="38" width="34" height="38" rx="4" /><rect x="420" y="20" width="32" height="56" rx="4" />
+          <rect x="24" y="100" width="56" height="42" rx="4" /><rect x="90" y="108" width="36" height="34" rx="4" /><rect x="150" y="96" width="30" height="46" rx="15" />
+          <rect x="196" y="104" width="64" height="38" rx="4" /><rect x="290" y="98" width="38" height="44" rx="4" /><rect x="340" y="110" width="50" height="32" rx="4" /><rect x="404" y="94" width="48" height="48" rx="4" />
+        </svg>
+      </aside>
+      <div className="flex items-center justify-center p-4 sm:p-8">
       <motion.div className="w-full max-w-sm" initial={{ opacity: 0, scale: 0.94, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', damping: 22, stiffness: 260 }}>
       <motion.form animate={controls} onSubmit={submit} className="card w-full space-y-4 p-8" noValidate>
         <div className="flex flex-col items-center gap-2 pb-2">
-          <div className="anim-float rounded-2xl bg-primary p-3 text-white"><Store size={28} /></div>
+          <div className="rounded-2xl bg-primary p-3 text-white lg:hidden"><Store size={28} /></div>
           <h1 className="text-xl font-semibold text-primary">SariStore</h1>
           <p className="text-sm text-muted">{isRegister ? 'Create the administrator account' : 'Sign in to manage your inventory'}</p>
         </div>
@@ -62,6 +78,7 @@ export default function Login() {
         </button>
       </motion.form>
       </motion.div>
+      </div>
     </div>
   );
 }

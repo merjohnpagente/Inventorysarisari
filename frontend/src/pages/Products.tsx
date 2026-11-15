@@ -136,7 +136,7 @@ export default function Products() {
 
       <div className="card overflow-hidden">
         {loading ? <Spinner /> : error ? <div className="p-4"><ErrorBox message={error} onRetry={reload} /></div> : !list.length ? (
-          <Empty title="No products found" text={q || category ? 'Try a different search or category.' : 'Add your first product to start tracking stock.'} />
+          <Empty title="No products found" text={q || category ? 'Try a different search or category.' : 'Add your first product to start tracking stock.'}>{!(q || category) && <button className="btn-primary mt-3" onClick={() => setModal({ mode: 'add' })}><Plus size={18} />Add your first product</button>}</Empty>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">

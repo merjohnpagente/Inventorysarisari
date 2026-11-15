@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, FolderTree, Layers, Package } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useFetch from '../hooks/useFetch';
-import { Empty, ErrorBox, Spinner, StatCard, StatusBadge, fmtDate } from '../components/ui';
+import { Empty, ErrorBox, Spinner, StatusBadge, fmtDate, useCountUp } from '../components/ui';
 import type { Dashboard as DashboardData, Product } from '../types';
 
 const List = ({ title, items, render, link }: { title: string; items?: Product[]; render: (p: Product) => ReactNode; link?: string }) => (
@@ -16,6 +15,19 @@ const List = ({ title, items, render, link }: { title: string; items?: Product[]
   </div>
 );
 
+function Stat({ label, value, hint, warn = false, to }: { label: string; value: unknown; hint: string; warn?: boolean; to?: string }) {
+  const shown = useCountUp(value);
+  return (
+    <div className="bg-white p-5">
+      <p className="text-sm text-muted">{label}</p>
+      <p className={`mt-1 text-3xl font-semibold tabular-nums ${warn && shown > 0 ? 'text-amber-700' : ''}`}>{shown}</p>
+      <p className="mt-1 text-xs text-muted">
+        {to ? <Link to={to} className="text-primary hover:underline">{hint}</Link> : hint}
+      </p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { data, loading, error, reload } = useFetch<DashboardData>('/dashboard');
   if (loading) return <Spinner />;
@@ -24,11 +36,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 stagger">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Package} label="Total Products" value={d.total_products ?? 0} />
-        <StatCard icon={FolderTree} label="Total Categories" value={d.total_categories ?? 0} tone="bg-sky-50 text-sky-700" />
-        <StatCard icon={Layers} label="Total Stock Quantity" value={d.total_stock ?? 0} tone="bg-emerald-50 text-emerald-700" />
-        <StatCard icon={AlertTriangle} label="Low Stock Products" value={d.low_stock_count ?? 0} tone="bg-amber-50 text-warn" />
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-sm lg:grid-cols-4">
+        <Stat label="Products" value={d.total_products ?? 0} hint="in your catalog" />
+        <Stat label="Categories" value={d.total_categories ?? 0} hint="grouping your items" />
+        <Stat label="Units in stock" value={d.total_stock ?? 0} hint="across all products" />
+        <Stat label="Low stock" value={d.low_stock_count ?? 0} warn to="/reports?tab=low" hint={(d.low_stock_count ?? 0) > 0 ? 'View items to restock' : 'Everything is above minimum'} />
       </div>
 
       <div className="card p-5">
@@ -45,7 +57,7 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        ) : <Empty title="No stock data" text="Add products to see your stock levels here." />}
+        ) : <Empty title="No stock data yet" text="Add products and record stock to see your levels here."><Link to="/products" className="btn-primary mt-3">Add products</Link></Empty>}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

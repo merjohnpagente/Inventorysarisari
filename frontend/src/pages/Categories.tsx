@@ -78,7 +78,7 @@ export default function Categories() {
       </div>
 
       {loading ? <Spinner /> : error ? <ErrorBox message={error} onRetry={reload} /> : !list.length ? (
-        <div className="card"><Empty title="No categories found" text={search ? 'Try a different search.' : 'Add a category to organize your products.'} /></div>
+        <div className="card"><Empty title="No categories found" text={search ? 'Try a different search.' : 'Add a category to organize your products.'}>{!search && <button className="btn-primary mt-3" onClick={() => setModal({})}><Plus size={18} />Add category</button>}</Empty></div>
       ) : (
         <div className="grid gap-4 stagger sm:grid-cols-2 xl:grid-cols-3">
           {list.map((c) => (
