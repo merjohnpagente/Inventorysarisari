@@ -25,6 +25,8 @@ const moveCols: Col<StockMovement>[] = [
   ['Type', (m) => m.movement_type], ['Quantity', (m) => m.quantity], ['Remarks', (m) => m.remarks || ''],
 ];
 
+const NUM = ['Purchase Price', 'Selling Price', 'Quantity', 'Minimum Stock'];
+
 export default function Reports() {
   const [sp] = useSearchParams();
   const initialTab = sp.get('tab') ?? '';
@@ -56,8 +58,8 @@ export default function Reports() {
         ))}
       </div>
 
-      <div className="no-print flex flex-col gap-3 lg:flex-row">
-        <div className="relative flex-1">
+      <div className="no-print flex flex-col gap-3 lg:flex-row lg:flex-wrap">
+        <div className="relative min-w-[14rem] flex-1">
           <Search size={16} className="absolute left-3.5 top-3.5 text-muted" />
           <input className="input !pl-10" placeholder="Search product" value={filters.search} onChange={set('search')} />
         </div>
@@ -65,10 +67,12 @@ export default function Reports() {
           <option value="">All categories</option>
           {rows(cats.data).map((c) => <option key={c.id} value={c.id}>{c.category_name}</option>)}
         </select>
-        <input type="date" className="input lg:w-44" value={filters.from} onChange={set('from')} aria-label="From date" />
-        <input type="date" className="input lg:w-44" value={filters.to} onChange={set('to')} aria-label="To date" />
+        <label className="flex items-center gap-2 text-sm text-muted">From<input type="date" className="input lg:w-40" value={filters.from} onChange={set('from')} /></label>
+        <label className="flex items-center gap-2 text-sm text-muted">To<input type="date" className="input lg:w-40" value={filters.to} onChange={set('to')} /></label>
+        <div className="flex gap-3 lg:ml-auto">
         <button className="btn-ghost" onClick={() => window.print()} disabled={!list.length}><Printer size={16} />Print</button>
         <button className="btn-primary" onClick={exportCsv} disabled={!list.length}><Download size={16} />Export CSV</button>
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -81,11 +85,11 @@ export default function Reports() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50"><tr>{cols.map(([h]) => <th key={h} className="th">{h}</th>)}{!isMove && <th className="th">Status</th>}</tr></thead>
+              <thead className="bg-slate-50"><tr>{cols.map(([h]) => <th key={h} className={`th ${NUM.includes(h) ? 'text-right' : ''}`}>{h}</th>)}{!isMove && <th className="th">Status</th>}</tr></thead>
               <tbody className="divide-y divide-slate-100">
                 <AnimatePresence initial={false}>{list.map((r, i) => (
 <motion.tr key={r.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 32 }} transition={{ delay: Math.min(i, 10) * 0.03, duration: 0.3 }}>
-                    {cols.map(([h, f]) => <td key={h} className="td">{h.includes('Price') ? peso(f(r)) : h === 'Date' ? fmtDate(f(r)) : f(r)}</td>)}
+                    {cols.map(([h, f]) => <td key={h} className={`td ${NUM.includes(h) ? 'text-right' : ''}`}>{h.includes('Price') ? peso(f(r)) : h === 'Date' ? fmtDate(f(r)) : f(r)}</td>)}
                     {!isMove && <td className="td"><StatusBadge product={r} /></td>}
                   </motion.tr>
                 ))}</AnimatePresence>

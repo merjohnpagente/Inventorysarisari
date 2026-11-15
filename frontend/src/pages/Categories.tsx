@@ -86,7 +86,7 @@ export default function Categories() {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="font-semibold">{c.category_name}</h3>
-                  <p className="text-sm text-muted">{c.description || 'No description.'}</p>
+                  {c.description && <p className="text-sm text-muted">{c.description}</p>}
                 </div>
                 <div className="flex shrink-0">
                   <button className="rounded-lg p-2 text-muted hover:bg-slate-100" onClick={() => setModal({ category: c })} aria-label="Edit"><Pencil size={16} /></button>

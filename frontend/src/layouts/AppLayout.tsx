@@ -39,7 +39,7 @@ export default function AppLayout() {
       <nav className="flex-1 space-y-1 p-3">
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} end={to === '/'} onClick={() => setDrawer(false)} title={label}
-            className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all hover:translate-x-0.5 ${isActive ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-primary'}`}>
+            className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-white hover:text-primary'}`}>
             <Icon size={20} className="shrink-0 transition-transform group-hover:scale-110" />
             {(mobile || !collapsed) && label}
           </NavLink>
@@ -81,7 +81,7 @@ export default function AppLayout() {
           </button>
           <button className="relative rounded-xl p-2 text-muted hover:bg-slate-100" onClick={() => navigate('/reports?tab=low')} aria-label={`${lowCount} low stock alerts`}>
             <Bell size={20} />
-            {lowCount > 0 && <><span className="absolute right-1 top-1 h-4 w-4 animate-ping rounded-full bg-danger/60" /><span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] text-white">{lowCount}</span></>}
+            {lowCount > 0 && <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] text-white">{lowCount}</span>}
           </button>
           <div className="relative">
             <button onClick={() => setMenu(!menu)} className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-100">

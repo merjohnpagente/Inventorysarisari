@@ -61,9 +61,10 @@ export default function Login() {
       <div className="flex items-center justify-center p-4 sm:p-8">
       <motion.div className="w-full max-w-sm" initial={{ opacity: 0, scale: 0.94, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', damping: 22, stiffness: 260 }}>
       <motion.form animate={controls} onSubmit={submit} className="card w-full space-y-4 p-8" noValidate>
-        <div className="flex flex-col items-center gap-2 pb-2">
+        <div className="flex flex-col items-center gap-1 pb-2 lg:items-start">
           <div className="rounded-2xl bg-primary p-3 text-white lg:hidden"><Store size={28} /></div>
-          <h1 className="text-xl font-semibold text-primary">SariStore</h1>
+          <span className="text-sm font-semibold text-primary lg:hidden">SariStore</span>
+          <h1 className="mt-1 text-2xl font-semibold">{isRegister ? 'Create admin account' : 'Welcome back'}</h1>
           <p className="text-sm text-muted">{isRegister ? 'Create the administrator account' : 'Sign in to manage your inventory'}</p>
         </div>
         {import.meta.env.VITE_MOCK && <p className="rounded-xl bg-green-50 p-3 text-sm text-primary">Preview mode: enter any username and password.</p>}
